@@ -1,0 +1,9 @@
+{% for attachment in field.value %}
+    <div>
+        <a href="{{ '/uploads/attachments/' ~ attachment.file }}" target="_blank">
+            {{ attachment.file }}
+        </a>
+    </div>
+{% else %}
+    <div>Нет вложений</div>
+{% endfor %}

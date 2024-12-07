@@ -1,0 +1,10 @@
+knp_paginator:
+  page_range: 5              # Количество страниц в пагинации
+  default_options:
+    page_name: page        # Имя параметра для номера страницы (например, ?page=2)
+    sort_field_name: sort  # Имя параметра для сортировки (например, ?sort=name)
+    sort_direction_name: direction # Имя параметра для направления сортировки
+    distinct: true         # Убедиться, что каждая строка уникальна
+  template:
+    pagination: '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig' # Шаблон пагинации для Bootstrap 5
+    sortable: '@KnpPaginator/Pagination/sortable_link.html.twig' # Шаблон для ссылок сортировки
