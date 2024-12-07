@@ -1,0 +1,80 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+
+{% block head %}
+    {{ parent() }}
+    <link href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    {{ parent() }}
+    <div class="d-flex align-items-center mb-3">
+        <!-- Кнопка для отображения прогресса -->
+        <button id="progress-button" class="btn btn-secondary me-2" disabled>
+            <span id="progress-text">0%</span>
+        </button>
+
+        <!-- Кнопка Verify Emails -->
+        <button id="verify-emails-button" class="btn btn-primary" data-action="verifyEmails">Verify Emails</button>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const progressButton = document.getElementById('progress-button');
+            const progressText = document.getElementById('progress-text');
+            const verifyButton = document.getElementById('verify-emails-button');
+
+            if (verifyButton) {
+                verifyButton.addEventListener('click', function () {
+                    // Инициализируем прогресс
+                    progressButton.disabled = false;
+                    progressText.textContent = '0%';
+                    progressButton.classList.remove('btn-success', 'btn-danger');
+                    progressButton.classList.add('btn-secondary');
+
+                    // Отправляем AJAX-запрос
+                    fetch('/admin?crudAction=verifyEmails&crudControllerFqcn=App\\Controller\\Admin\\EmailCrudController', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.success) {
+                                let completed = 0;
+                                const total = data.results.length;
+
+                                data.results.forEach((result, index) => {
+                                    setTimeout(() => {
+                                        completed++;
+                                        const progress = Math.round((completed / total) * 100);
+                                        progressText.textContent = `${progress}%`;
+
+                                        if (completed === total) {
+                                            progressButton.classList.remove('btn-secondary');
+                                            progressButton.classList.add('btn-success');
+                                            progressText.textContent = 'Done!';
+                                        }
+                                    }, index * 500);
+                                });
+                            } else {
+                                progressText.textContent = 'Error';
+                                progressButton.classList.remove('btn-secondary');
+                                progressButton.classList.add('btn-danger');
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                            progressText.textContent = 'Error';
+                            progressButton.classList.remove('btn-secondary');
+                            progressButton.classList.add('btn-danger');
+                        });
+                });
+            }
+        });
+    </script>
+{% endblock %}

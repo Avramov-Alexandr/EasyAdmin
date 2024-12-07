@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Административная панель</title>
+    <style>
+        table {
+            border: 1px solid black;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<h1>Административная панель</h1>
+
+{% for message in app.flashes('success') %}
+    <div class="success">{{ message }}</div>
+{% endfor %}
+
+{% for message in app.flashes('error') %}
+    <div class="error">{{ message }}</div>
+{% endfor %}
+
+<h2>Список пользователей</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Имя пользователя</th>
+        <th>Роли</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.roles|join(', ') }}</td>
+            <td>
+                <form method="post" action="{{ path('admin_delete', {'id': user.id}) }}">
+                    <button type="submit">Удалить</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h2>Создать нового пользователя</h2>
+<form method="post" action="{{ path('admin_create') }}">
+    <label for="username">Имя пользователя:</label>
+    <input id="username" type="text" name="username" required>
+    <br>
+    <label for="password">Пароль:</label>
+    <input id="password" type="password" name="password" required>
+    <br>
+    <label for="roles">Роли:</label>
+    <input id="roles" type="text" name="roles[]" placeholder="ROLE_USER">
+    <br>
+    <button type="submit">Создать</button>
+</form>
+</body>
+</html>

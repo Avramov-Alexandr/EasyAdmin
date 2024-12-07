@@ -1,0 +1,87 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{% block body %}
+    {{ parent() }}
+
+    <!-- Кнопка для запуска проверки -->
+    <button id="verify-emails-btn" class="btn btn-primary">Verify Emails</button>
+
+    <!-- Модальное окно для прогресса -->
+    <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="progressModalLabel">Verification Progress</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <p id="status-text" class="mt-3">Starting verification...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const verifyButton = document.getElementById('verify-emails-btn');
+            const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+            const progressBar = document.getElementById('progress-bar');
+            const statusText = document.getElementById('status-text');
+
+            verifyButton.addEventListener('click', function () {
+                // Показываем модальное окно
+                progressModal.show();
+                progressBar.style.width = '0%';
+                progressBar.textContent = '0%';
+                statusText.textContent = 'Starting verification...';
+
+                // Отправляем AJAX-запрос
+                // fetch('/admin?crudAction=verifyEmails&crudControllerFqcn=App%5CController%5CAdmin%5CEmailCrudController', {
+                fetch('{{ ea_url()
+                    .setController('App\\Controller\\Admin\\EmailCrudController')
+                    .setAction('emails')
+                }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            let completed = 0;
+                            const total = data.results.length;
+
+                            data.results.forEach((result, index) => {
+                                setTimeout(() => {
+                                    completed++;
+                                    const progress = Math.round((completed / total) * 100);
+
+                                    progressBar.style.width = `${progress}%`;
+                                    progressBar.textContent = `${progress}%`;
+
+                                    if (completed === total) {
+                                        statusText.textContent = 'Verification completed successfully!';
+                                        setTimeout(() => progressModal.hide(), 3000);
+                                    }
+                                }, index * 500); // Искусственная задержка для демонстрации
+                            });
+                        } else {
+                            statusText.textContent = 'Verification failed.';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        statusText.textContent = 'Error occurred while verifying emails.';
+                    });
+            });
+        });
+    </script>
+{% endblock %}
