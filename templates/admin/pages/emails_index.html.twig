@@ -14,31 +14,54 @@
     {{ parent() }}
 {% endblock %}
 
-{% block body %}
-    {{ parent() }}
+{% block content %}
+    <!-- Контейнер с Flexbox -->
+    <div style="display: flex; flex-direction: column; align-items: center;">
 
-
-    <div id="verification-result" class="mt-3" style="display: none;">
-        <div class="progress">
-            <div
-                    id="progress-bar"
-                    class="progress-bar"
-                    role="progressbar"
-                    style="width: 0%;"
-                    aria-valuenow="0"
-                    aria-valuemin="0"
-                    aria-valuemax="100">
-                0%
-            </div>
+        <!-- Таблица -->
+        <div style="width: 100%; margin-bottom: 20px;">
+            {{ parent() }}
         </div>
-        <p id="status-text" class="mt-3">Starting verification...</p>
+
+        <!-- Прогресс-бар -->
+        <div id="verification-result" class="mt-3" style="display: none; width: 100%; text-align: center;">
+            <div class="progress" style="margin: 0 auto; width: 50%;">
+                <div
+                        id="progress-bar"
+                        class="progress-bar"
+                        role="progressbar"
+                        style="width: 0%;"
+                        aria-valuenow="0"
+                        aria-valuemin="0"
+                        aria-valuemax="100">
+                    0%
+                </div>
+            </div>
+            <p id="status-text" class="mt-3">Starting verification...</p>
+        </div>
+
+        <!-- Диаграмма -->
+        <div style="width: 600px; margin-top: 20px; text-align: center;">
+            <h3>Email Verification Results</h3>
+            <canvas
+                    id="verificationChart"
+                    data-controller="email-chart"
+                    data-email-chart-none="{{ noneCount }}"
+                    data-email-chart-valid="{{ validCount }}"
+                    data-email-chart-unknown="{{ unknownCount }}"
+                    data-email-chart-risky="{{ riskyCount }}"
+                    data-email-chart-invalid="{{ invalidCount }}">
+            </canvas>
+        </div>
     </div>
 {% endblock %}
 
 {% block configured_javascripts %}
     {{ parent() }}
+    {{ importmap('chart.js') }}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Прогресс-бар
             const button = document.querySelector('#verify-emails-button');
             const progressBar = document.getElementById('progress-bar');
             const statusText = document.getElementById('status-text');
@@ -98,6 +121,36 @@
                 }
 
                 fetchEmails();
+            });
+
+            // Инициализация диаграммы
+            const ctx = document.getElementById('verificationChart').getContext('2d');
+            const chartData = {
+                labels: ['None', 'Valid', 'Unknown', 'Risky', 'Invalid'],
+                datasets: [{
+                    label: 'Email Verification Results',
+                    data: [
+                        parseInt(document.getElementById('verificationChart').dataset.emailChartNone, 10),
+                        parseInt(document.getElementById('verificationChart').dataset.emailChartValid, 10),
+                        parseInt(document.getElementById('verificationChart').dataset.emailChartUnknown, 10),
+                        parseInt(document.getElementById('verificationChart').dataset.emailChartRisky, 10),
+                        parseInt(document.getElementById('verificationChart').dataset.emailChartInvalid, 10),
+                    ],
+                    backgroundColor: ['#cccccc', '#36a2eb', '#ffcd56', '#ff9f40', '#ff6384'],
+                }]
+            };
+
+            const verificationChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    },
+                },
             });
         });
     </script>

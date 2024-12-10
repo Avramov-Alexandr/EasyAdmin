@@ -1,0 +1,24 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{% block content %}
+    {{ parent() }}
+
+    <div style="margin-top: 30px;">
+        <h3>Email Verification Results</h3>
+        <div style="width: 400px; margin: 0 auto;">
+            <canvas
+                    data-controller="email-chart"
+                    data-email-chart-none="{{ noneCount }}"
+                    data-email-chart-valid="{{ validCount }}"
+                    data-email-chart-unknown="{{ unknownCount }}"
+                    data-email-chart-risky="{{ riskyCount }}"
+                    data-email-chart-invalid="{{ invalidCount }}"
+                    data-email-chart-target="chart">
+            </canvas>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script type="module" src="{{ asset('chart.js') }}"></script>
+{% endblock %}

@@ -14,6 +14,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Knp\Component\Pager\PaginatorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 
@@ -37,13 +39,52 @@ class EmailCrudController extends AbstractCrudController
     {
         $verifyEmail = Action::new('verifyEmails', 'Verify Emails')
             ->addCssClass('btn btn-primary')
-            ->linkToCrudAction('verifyEmails')
-            ->createAsGlobalAction();
+            ->linkToCrudAction('verifyEmails');
+            //->createAsGlobalAction();
 
         return $actions->add(Crud::PAGE_INDEX, $verifyEmail);
     }
 
+    public function index(AdminContext $context): Response
+    {
+        $repository = $this->entityManager->getRepository(Email::class);
 
+        // Считаем количество email по категориям
+        $noneCount = $repository->count(['emailVerifyResult' => 'None']);
+        $validCount = $repository->count(['emailVerifyResult' => 'Valid']);
+        $unknownCount = $repository->count(['emailVerifyResult' => 'Unknown']);
+        $riskyCount = $repository->count(['emailVerifyResult' => 'Risky']);
+        $invalidCount = $repository->count(['emailVerifyResult' => 'Invalid']);
+
+        // Добавляем кастомные данные в шаблон
+        $templateParameters = parent::index($context)->all();
+
+        $templateParameters['noneCount'] = $noneCount;
+        $templateParameters['validCount'] = $validCount;
+        $templateParameters['unknownCount'] = $unknownCount;
+        $templateParameters['riskyCount'] = $riskyCount;
+        $templateParameters['invalidCount'] = $invalidCount;
+
+        return $this->render('admin/pages/emails_index.html.twig', $templateParameters);
+    }
+    public function configureDashboard(): array
+    {
+        $repository = $this->entityManager->getRepository(Email::class);
+
+        $noneCount = $repository->count(['emailVerifyResult' => 'None']);
+        $validCount = $repository->count(['emailVerifyResult' => 'Valid']);
+        $unknownCount = $repository->count(['emailVerifyResult' => 'Unknown']);
+        $riskyCount = $repository->count(['emailVerifyResult' => 'Risky']);
+        $invalidCount = $repository->count(['emailVerifyResult' => 'Invalid']);
+
+        return [
+            'noneCount' => $noneCount,
+            'validCount' => $validCount,
+            'unknownCount' => $unknownCount,
+            'riskyCount' => $riskyCount,
+            'invalidCount' => $invalidCount,
+        ];
+    }
 
     public function verifyEmails(Request $request, EmailVerificationService $verificationService): JsonResponse
     {

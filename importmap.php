@@ -44,7 +44,7 @@ return [
     ],
     'chart.js' => [
         //'version' => '3.9.1',
-        'path' => './node_modules/chart.js/dist/chart.umd.js',
+        'path' => './assets/vendor/chart.js/chart.umd.js',
         'entrypoint' => true,
     ],
 ];
