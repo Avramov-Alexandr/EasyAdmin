@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stimulus Test</title>
+    {% block stylesheets %}
+    {% endblock %}
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+</head>
+<body>
+<h1>Stimulus Test</h1>
+<div {{ stimulus_controller('hello') }}> </div>
+<div {{ stimulus_controller('test') }}>
+    <p data-test-target="output">Stimulus will update this text</p>
+    <button type="button" onclick="event.preventDefault()" data-action="test#changeText">Click Me</button>
+</div>
+</body>
+</html>
