@@ -1,19 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Stimulus Test</title>
-    {% block stylesheets %}
-    {% endblock %}
-    {% block javascripts %}
-        {% block importmap %}{{ importmap('app') }}{% endblock %}
-    {% endblock %}
-</head>
-<body>
-<h1>Stimulus Test</h1>
-<div {{ stimulus_controller('hello') }}> </div>
-<div {{ stimulus_controller('test') }}>
-    <p data-test-target="output">Stimulus will update this text</p>
-    <button type="button" onclick="event.preventDefault()" data-action="test#changeText">Click Me</button>
-</div>
-</body>
-</html>
+{% extends 'base.html.twig' %}
+
+{% block title %}Stimulus and Asset Mapper Demo{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/test2.css') }}">
+    <style>
+        .stimulus-demo {
+            text-align: center;
+            margin-top: 50px;
+            background-color: #b3e5fc;
+            padding: 20px;
+        }
+        .stimulus-output {
+            margin: 20px 0;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="stimulus-demo">
+        <h1>Stimulus and Asset Mapper Demo</h1>
+
+        <div data-controller="test">
+            <p class="stimulus-output" data-test-target="output">
+                Stimulus will update this text
+            </p>
+            <button type="button" class="btn btn-primary" data-action="test#changeText">
+                Click Me
+            </button>
+        </div>
+
+        <h2>Dynamic Content Added via Asset Mapper</h2>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script type="module" src="{{ asset('test2.js') }}"></script>
+{% endblock %}
