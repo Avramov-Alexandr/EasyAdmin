@@ -42,4 +42,9 @@ return [
         'path' => './assets/test2.js',
         'entrypoint' => true,
     ],
+    'chart.js' => [
+        //'version' => '3.9.1',
+        'path' => './node_modules/chart.js/dist/chart.umd.js',
+        'entrypoint' => true,
+    ],
 ];
