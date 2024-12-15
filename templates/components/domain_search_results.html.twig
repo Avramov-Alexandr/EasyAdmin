@@ -1,0 +1,28 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{% block content_title %}
+    {{ 'Search Results for'|trans }} "{{ query }}"
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>{{ results|length }} {{ 'result(s) found'|trans }}</h2>
+
+        {% if results is empty %}
+            <p>No results found for "{{ query }}"</p>
+        {% else %}
+            <ul>
+                {% for result in results %}
+                    <li>
+                        <strong>{{ result.name }}</strong> — {{ result.clientId }} | {{ result.smtpHost }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+
+        <a href="{{ path('admin', { crudControllerFqcn: 'App\\Controller\\Admin\\DomainCrudController', crudAction: 'index' }) }}" class="btn btn-primary">
+            {{ 'Back to list'|trans }}
+        </a>
+    </div>
+{% endblock %}
