@@ -216,4 +216,23 @@ class Domain
     {
         return $this->name ?? 'Without name';
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'clientId' => $this->getClientId(),
+            'smtpHost' => $this->getSmtpHost(),
+            'smtpUser' => $this->getSmtpUser(),
+            'smtpPass' => $this->getSmtpPass(),
+            'smtpPort' => $this->getSmtpPort(),
+            'useAuth' => $this->isUseAuth(),
+            'fromEmail' => $this->getFromEmail(),
+            'fromName' => $this->getFromName(),
+            'fromHost' => $this->getFromHost(),
+            'createdAt' => $this->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'updatedAt' => $this->getUpdatedAt()?->format('Y-m-d H:i:s'),
+        ];
+    }
 }

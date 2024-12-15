@@ -3,3 +3,8 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+admin_domain_search:
+    path: /admin/search-domains
+    controller: App\Controller\Admin\DomainCrudController::search
+    methods: [ GET ]
