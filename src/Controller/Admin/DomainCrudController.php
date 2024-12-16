@@ -82,38 +82,51 @@ class DomainCrudController extends AbstractCrudController
     public function createIndexQueryBuilder(SearchDto $searchDto, $entityDto, $fields, $filters): QueryBuilder
     {
         $query = $searchDto->getQuery();
+
         if ($query) {
-            $results = $this->domainSearchService->search($query);
-
-            $ids = array_map(fn($domain) => $domain['id'], $results);
-
             return $this->entityManager->createQueryBuilder()
                 ->select('entity')
                 ->from(Domain::class, 'entity')
-                ->where('entity.id IN (:ids)')
-                ->setParameter('ids', $ids);
+                ->where('entity.name LIKE :query')
+                ->setParameter('query', '%' . $query . '%');
         }
 
         return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
     }
 
 
+
     public function search(Request $request, LoggerInterface $logger): Response
     {
         $query = $request->query->get('q', '');
-        if (!$query) {
-            return $this->redirect($this->adminUrlGenerator->setController(self::class)->setAction('index')->generateUrl());
-        }
-        $logger->info('Search query: ' . $query);
-        $results = $this->entityManager->getRepository(Domain::class)->createQueryBuilder('d')
-            ->where('d.name LIKE :query')
-            ->setParameter('query', '%' . $query . '%')
-            ->getQuery()
-            ->getResult();
 
-        return $this->render('components/domain_search_results.html.twig', [
-            'query' => $query,
-            'results' => $results,
-        ]);
+        // Если поисковый запрос пустой
+        if (empty($query)) {
+            return $this->redirect($this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction('index')
+                ->generateUrl());
+        }
+
+        $logger->info('Received search query: ' . $query);
+
+        // Выполняем поиск через DomainSearchService
+        $results = $this->domainSearchService->search($query);
+
+        $logger->info('Search returned ' . count($results) . ' result(s).');
+
+        // Передаем результаты через контекст EasyAdmin
+        $this->addFlash('success', count($results) . ' result(s) found for "' . $query . '"');
+
+        // Возвращаем стандартную страницу index с фильтрацией
+        return $this->redirect($this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction('index')
+            ->set('query', $query)
+            ->generateUrl());
     }
+
+
+
+
 }

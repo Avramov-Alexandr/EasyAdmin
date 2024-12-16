@@ -4,6 +4,7 @@ namespace App\Service;
 
 use Elastica\Query;
 use FOS\ElasticaBundle\Finder\FinderInterface;
+//use FOS\ElasticaBundle\Repository;
 
 class DomainSearchService
 {
@@ -17,7 +18,7 @@ class DomainSearchService
     public function search(string $query): array
     {
         $matchQuery = new Query\MatchQuery();
-        $matchQuery->setFieldQuery('name', $query);
+        $matchQuery->setField('name', $query);
 
         return $this->domainFinder->find($matchQuery);
     }

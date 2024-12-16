@@ -13,7 +13,7 @@
             <h5 class="mb-3">Results</h5>
         </div>
         <div class="search-container w-100">
-            <form method="get" action="{{ path('admin', { crudAction: 'searc', crudControllerFqcn: 'App\\Controller\\Admin\\DomainCrudController' }) }}">
+            <form method="get" action="{{ path('admin_domain_search') }}">
                 <div class="input-group">
                     <input type="text" name="q" class="form-control" placeholder="Search domains..." value="{{ app.request.query.get('q') }}">
                     <button class="btn btn-primary" type="submit">Search</button>

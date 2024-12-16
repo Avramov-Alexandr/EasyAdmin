@@ -1,12 +1,12 @@
 {% extends '@EasyAdmin/crud/index.html.twig' %}
 
 {% block content_title %}
-    {{ 'Search Results for'|trans }} "{{ query }}"
+    Search Results for "{{ query }}"
 {% endblock %}
 
 {% block content %}
     <div class="container mt-4">
-        <h2>{{ results|length }} {{ 'result(s) found'|trans }}</h2>
+        <h2>{{ results|length }} result(s) found</h2>
 
         {% if results is empty %}
             <p>No results found for "{{ query }}"</p>
@@ -19,10 +19,5 @@
                 {% endfor %}
             </ul>
         {% endif %}
-
-
-        <a href="{{ path('admin', { crudControllerFqcn: 'App\\Controller\\Admin\\DomainCrudController', crudAction: 'index' }) }}" class="btn btn-primary">
-            {{ 'Back to list'|trans }}
-        </a>
     </div>
 {% endblock %}
