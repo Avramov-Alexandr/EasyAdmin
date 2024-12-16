@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Email;
 use App\Service\EmailVerificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -18,16 +19,22 @@ use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Knp\Component\Pager\PaginatorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use App\Service\MeiliSearchService;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use Psr\Log\LoggerInterface;
+
 
 class EmailCrudController extends AbstractCrudController
 {
     private EntityManagerInterface $entityManager;
     private AdminUrlGenerator $adminUrlGenerator;
+    private MeiliSearchService $meiliSearchService;
 
-    public function __construct(EntityManagerInterface $entityManager, AdminUrlGenerator $adminUrlGenerator)
+    public function __construct(EntityManagerInterface $entityManager, AdminUrlGenerator $adminUrlGenerator, MeiliSearchService $meiliSearchService)
     {
         $this->entityManager = $entityManager;
         $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->meiliSearchService = $meiliSearchService;
     }
 
     public static function getEntityFqcn(): string
@@ -150,4 +157,50 @@ class EmailCrudController extends AbstractCrudController
             TextField::new('emailVerifyResult', 'Verification Result'),
         ];
     }
+
+    public function search(Request $request, LoggerInterface $logger): Response
+    {
+        $query = $request->query->get('q', '');
+
+        // Если поисковый запрос пустой
+        if (empty($query)) {
+            return $this->redirect($this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction('index')
+                ->generateUrl());
+        }
+
+        $logger->info('Received search query: ' . $query);
+
+        // Возвращаем стандартную страницу index с фильтрацией через параметр query
+        return $this->redirect($this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction('index')
+            ->set('query', $query) // Параметр для createIndexQueryBuilder
+            ->generateUrl());
+    }
+
+
+
+
+    public function createIndexQueryBuilder(SearchDto $searchDto, $entityDto, $fields, $filters): QueryBuilder
+    {
+        $query = $searchDto->getQuery();
+
+        if ($query) {
+            // Поиск через MeiliSearch и получение id найденных записей
+            $results = $this->meiliSearchService->search('Email', $query);
+            $ids = array_column($results, 'id');
+
+            return $this->entityManager->createQueryBuilder()
+                ->select('e')
+                ->from(Email::class, 'e')
+                ->where('e.id IN (:ids)')
+                ->setParameter('ids', $ids);
+        }
+
+        return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+    }
+
+
 }

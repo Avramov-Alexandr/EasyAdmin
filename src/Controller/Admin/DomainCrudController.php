@@ -20,18 +20,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use Psr\Log\LoggerInterface;
+use App\Service\MeiliSearchService;
 
 class DomainCrudController extends AbstractCrudController
 {
     private DomainSearchService $domainSearchService;
     private AdminUrlGenerator $adminUrlGenerator;
     private EntityManagerInterface $entityManager;
+    private MeiliSearchService $meiliSearchService;
 
-    public function __construct(DomainSearchService $domainSearchService, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager)
+    public function __construct(DomainSearchService $domainSearchService, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager, MeiliSearchService $meiliSearchService)
     {
         $this->domainSearchService = $domainSearchService;
         $this->adminUrlGenerator = $adminUrlGenerator;
         $this->entityManager = $entityManager;
+        $this->meiliSearchService = $meiliSearchService;
     }
 
     public static function getEntityFqcn(): string
@@ -49,7 +52,7 @@ class DomainCrudController extends AbstractCrudController
     {
         return [
             IdField::new('id')->hideOnForm(),
-            TextField::new('clientId', 'Client ID'),
+            TextField::new('clientId', 'Client ID')->hideOnIndex(),
             TextField::new('name', 'Domain name'),
             TextField::new('smtpHost', 'SMTP Host'),
             TextField::new('smtpUser', 'SMTP User'),
@@ -127,6 +130,25 @@ class DomainCrudController extends AbstractCrudController
     }
 
 
+    public function meilisearch(Request $request, LoggerInterface $logger): Response
+    {
+        $query = $request->query->get('q', '');
 
+        if (empty($query)) {
+            return $this->redirect($this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction('index')
+                ->generateUrl());
+        }
+
+        $logger->info('MeiliSearch query: ' . $query);
+
+        // Редирект с параметром для createIndexQueryBuilder
+        return $this->redirect($this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction('index')
+            ->set('query', $query)
+            ->generateUrl());
+    }
 
 }

@@ -1,0 +1,23 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{% block content_title %}
+    {{ 'Message'|trans }}
+{% endblock %}
+
+{% block page_actions %}
+    {{ parent() }}
+{% endblock %}
+
+{% block content %}
+    <!-- Контейнер с Flexbox -->
+
+
+    <div style="width: 100%; margin-bottom: 20px;">
+        {% include 'components/search_message_form.html.twig' %}
+        {{ parent() }}
+    </div>
+{% endblock %}
+
+{% block configured_javascripts %}
+
+{% endblock %}

@@ -20,8 +20,11 @@
 
         <!-- Таблица -->
         <div style="width: 100%; margin-bottom: 20px;">
+            {% include 'components/search_form.html.twig' %}
             {{ parent() }}
         </div>
+
+
 
         <!-- Прогресс-бар -->
         <div id="verification-result" class="mt-3" style="display: none; width: 100%; text-align: center;">

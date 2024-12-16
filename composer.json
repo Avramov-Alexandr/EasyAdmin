@@ -15,8 +15,13 @@
         "easycorp/easyadmin-bundle": "^4.16",
         "friendsofsymfony/elastica-bundle": "^6.4",
         "knplabs/knp-paginator-bundle": "^6.6",
+        "meilisearch/meilisearch-php": "^1.11",
+        "nyholm/psr7": "^1.8",
+        "php-http/discovery": "^1.20",
         "phpdocumentor/reflection-docblock": "^5.6",
         "phpstan/phpdoc-parser": "^2.0",
+        "psr/http-factory": "^1.1",
+        "psr/http-factory-implementation": "*",
         "shapecode/cron-bundle": "^7.2",
         "stof/doctrine-extensions-bundle": "*",
         "symfony/asset": "7.1.*",
@@ -53,6 +58,7 @@
         "twig/twig": "^2.12|^3.0",
         "vich/uploader-bundle": "^2.4"
     },
+
     "config": {
         "allow-plugins": {
             "php-http/discovery": true,

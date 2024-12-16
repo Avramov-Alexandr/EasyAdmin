@@ -22,4 +22,6 @@
 ###> symfony/asset-mapper ###
 /public/assets/
 /assets/vendor/
+
+/meilisearch
 ###< symfony/asset-mapper ###

@@ -5,7 +5,12 @@
 {% endblock %}
 
 {% block content %}
-    {{ parent() }}
+    <div style="display: flex; flex-direction: column; align-items: center;">
+    <div style="width: 100%; margin-bottom: 20px;">
+        {% include 'components/search_domain_form.html.twig' %}
+        {{ parent() }}
+    </div>
+    </div>
 
     <!-- Обёртка для строки поиска -->
     <div class="d-flex flex-column align-items-start mt-3">
