@@ -4,7 +4,16 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+
+#admin_domain_index:
+#    path: /admin/domains
+#    controller: App\Controller\Admin\DomainCrudController::index
+#    methods: [GET]
+
 admin_domain_search:
-    path: /admin/search-domains
+    path: /admin/search
     controller: App\Controller\Admin\DomainCrudController::search
-    methods: [ GET ]
+#admin_domain_search:
+ #   path: /admin/search-domains
+  #  controller: App\Controller\Admin\DomainCrudController::search
+   # methods: [ GET ]

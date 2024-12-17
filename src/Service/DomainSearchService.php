@@ -4,22 +4,41 @@ namespace App\Service;
 
 use Elastica\Query;
 use FOS\ElasticaBundle\Finder\FinderInterface;
-//use FOS\ElasticaBundle\Repository;
+use Psr\Log\LoggerInterface;
 
 class DomainSearchService
 {
     private FinderInterface $domainFinder;
-
-    public function __construct(FinderInterface $domainFinder)
+    private LoggerInterface $logger;
+    public function __construct(FinderInterface $domainFinder, LoggerInterface $logger)
     {
         $this->domainFinder = $domainFinder;
+        $this->logger = $logger;
     }
 
     public function search(string $query): array
     {
-        $matchQuery = new Query\MatchQuery();
-        $matchQuery->setField('name', $query);
+        $this->logger->info('Elastica search query: ' . $query);
 
-        return $this->domainFinder->find($matchQuery);
+        // MultiMatchQuery для поиска по нескольким полям
+        $multiMatchQuery = new Query\MultiMatch();
+        $multiMatchQuery->setQuery($query);
+        $multiMatchQuery->setFields([
+            'name',
+            'smtpHost',
+            'smtpUser',
+            'smtpPass',
+            'fromEmail',
+            'fromName',
+            'fromHost'
+        ]);
+
+        // Выполнение поиска
+        $results = $this->domainFinder->find($multiMatchQuery);
+
+        return array_map(fn($result) => [
+            'id' => $result->getId(),
+            'name' => $result->getName(),
+        ], $results);
     }
 }

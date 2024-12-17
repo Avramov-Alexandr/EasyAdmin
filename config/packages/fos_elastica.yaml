@@ -15,9 +15,10 @@ fos_elastica:
           delete: true
         finder: ~
       properties:
-        id:
-          type: integer
-        name:
-          type: text
-        description:
-          type: text
+        name: { type: text }
+        smtpHost: { type: text }
+        smtpUser: { type: text }
+        smtpPass: { type: text }
+        fromEmail: { type: text }
+        fromName: { type: text }
+        fromHost: { type: text }
