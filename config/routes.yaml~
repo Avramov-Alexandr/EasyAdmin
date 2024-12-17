@@ -1,0 +1,30 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+admin_domain_search:
+    path: /admin/search-domains
+    controller: App\Controller\Admin\DomainCrudController::search
+    methods: [ GET ]
+
+admin_email_search:
+    path: /admin/email/search
+    controller: App\Controller\Admin\EmailCrudController::search
+
+admin_history_search:
+    path: /admin/history/search
+    controller: App\Controller\Admin\HistoryCrudController::search
+
+admin_user_search:
+    path: /admin/user/search
+    controller: App\Controller\Admin\UserCrudController::search
+
+admin_message_search:
+    path: /admin/message/search
+    controller: App\Controller\Admin\MessageCrudController::search
+
+admin_domain_elasticsearch:
+    path: /admin/domain/search
+    controller: App\Controller\Admin\DomainCrudController::search

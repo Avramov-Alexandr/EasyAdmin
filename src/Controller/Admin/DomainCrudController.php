@@ -16,25 +16,24 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use Psr\Log\LoggerInterface;
-use App\Service\MeiliSearchService;
+
+
 
 class DomainCrudController extends AbstractCrudController
 {
     private DomainSearchService $domainSearchService;
     private AdminUrlGenerator $adminUrlGenerator;
     private EntityManagerInterface $entityManager;
-    private MeiliSearchService $meiliSearchService;
 
-    public function __construct(DomainSearchService $domainSearchService, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager, MeiliSearchService $meiliSearchService)
+
+    public function __construct(DomainSearchService $domainSearchService, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager)
     {
         $this->domainSearchService = $domainSearchService;
         $this->adminUrlGenerator = $adminUrlGenerator;
         $this->entityManager = $entityManager;
-        $this->meiliSearchService = $meiliSearchService;
+
     }
 
     public static function getEntityFqcn(): string
@@ -44,8 +43,16 @@ class DomainCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions;
+        $searchAction = Action::new('search', 'Search')
+            ->linkToUrl(function () {
+                return $this->adminUrlGenerator
+                    ->setController(self::class)
+                    ->setAction('search')
+                    ->generateUrl();
+            })
+            ->setCssClass('btn btn-primary');
 
+        return $actions->add(Crud::PAGE_INDEX, $searchAction);
     }
 
     public function configureFields(string $pageName): iterable
@@ -62,7 +69,6 @@ class DomainCrudController extends AbstractCrudController
             TextField::new('fromEmail', 'From Email'),
             TextField::new('fromName', 'From Name'),
             TextField::new('fromHost', 'From Host'),
-            //Crud::FIELD_ACTIONS,
         ];
     }
 
@@ -84,71 +90,29 @@ class DomainCrudController extends AbstractCrudController
     }
     public function createIndexQueryBuilder(SearchDto $searchDto, $entityDto, $fields, $filters): QueryBuilder
     {
+        dump('Using custom createIndexQueryBuilder');
         $query = $searchDto->getQuery();
 
         if ($query) {
+            dump('Search query:', $query);
+
+            $results = $this->domainSearchService->search($query);
+            $ids = array_map(fn($result) => $result['id'], $results);
+
+            dump('Elastica Results IDs:', $ids);
+
+            if (empty($ids)) {
+                return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+            }
+
             return $this->entityManager->createQueryBuilder()
                 ->select('entity')
                 ->from(Domain::class, 'entity')
-                ->where('entity.name LIKE :query')
-                ->setParameter('query', '%' . $query . '%');
+                ->where('entity.id IN (:ids)')
+                ->setParameter('ids', $ids);
         }
 
         return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
-    }
-
-
-
-    public function search(Request $request, LoggerInterface $logger): Response
-    {
-        $query = $request->query->get('q', '');
-
-        // Если поисковый запрос пустой
-        if (empty($query)) {
-            return $this->redirect($this->adminUrlGenerator
-                ->setController(self::class)
-                ->setAction('index')
-                ->generateUrl());
-        }
-
-        $logger->info('Received search query: ' . $query);
-
-        // Выполняем поиск через DomainSearchService
-        $results = $this->domainSearchService->search($query);
-
-        $logger->info('Search returned ' . count($results) . ' result(s).');
-
-        // Передаем результаты через контекст EasyAdmin
-        $this->addFlash('success', count($results) . ' result(s) found for "' . $query . '"');
-
-        // Возвращаем стандартную страницу index с фильтрацией
-        return $this->redirect($this->adminUrlGenerator
-            ->setController(self::class)
-            ->setAction('index')
-            ->set('query', $query)
-            ->generateUrl());
-    }
-
-
-    public function meilisearch(Request $request, LoggerInterface $logger): Response
-    {
-        $query = $request->query->get('q', '');
-
-        if (empty($query)) {
-            return $this->redirect($this->adminUrlGenerator
-                ->setController(self::class)
-                ->setAction('index')
-                ->generateUrl());
-        }
-
-        $logger->info('MeiliSearch query: ' . $query);
-
-        // Редирект с параметром для createIndexQueryBuilder
-        return $this->redirect($this->adminUrlGenerator
-            ->setController(self::class)
-            ->setAction('index')
-            ->set('query', $query)
-            ->generateUrl());
     }
 
 }
